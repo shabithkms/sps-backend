@@ -3,7 +3,11 @@ var db = require("../config/connection");
 const objectId = require("mongodb").ObjectID;
 const nodemailer = require("nodemailer");
 var generator = require("generate-password");
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const BASE_URL = process.env.BASE;
+console.log(BASE_URL);
 
 module.exports = {
   addTeacher: (req, res) => {
@@ -16,10 +20,22 @@ module.exports = {
       try {
         db.get()
           .collection(collection.TEACHER_COLLECTION)
-          .insertOne({ name, email,password })
+          .insertOne({ name, email, password })
           .then((response) => {
             console.log(response);
             res.status(200).json({ result: "success" });
+
+            // Creating one time link for to email
+            const secret = JWT_SECRET + password;
+            const payload = {
+              name,
+              email,
+            };
+            const token = jwt.sign(payload, secret, {
+              expiresIn: "15m",
+            });
+            const link = `${BASE_URL}/teacher/${token}`;
+            console.log(link);
             let transporter = nodemailer.createTransport({
               service: "gmail",
               auth: {
@@ -32,11 +48,25 @@ module.exports = {
               from: process.env.FROM_MAIL,
               to: "shabithkms2035@gmail.com",
               subject: "Registration success",
-              text: `
-              You have successfully registered for SPS Teacher position.
-              Now you can login to your teacher Dashboard using this link and the password,
-              link: ${"http://localhost:3000/admin/login"}
-              password : ${password}`,
+              html: `
+              <h2>Hi <span style="color: #00d2b5">Teacher</span>,</h2>
+              <p>Click the Button  to SignUp to Your Teacher account</p>
+              <div class="" style="margin-bottom: 30px; margin-top: 30px">
+                <a
+                  style="
+                    color: #fff;
+                    background-color: #00d2b5;
+                    padding: 20px 30px 20px 30px;
+                    text-decoration: none;
+                    margin-top: 30px;
+                    margin-bottom: 30px;
+                  "
+                  href="${link}"
+                >
+                  Signup as a Teacher
+                </a>
+              </div>
+              `,
             };
 
             transporter.sendMail(mailOptions, function (err, data) {
