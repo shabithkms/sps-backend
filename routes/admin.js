@@ -1,25 +1,11 @@
-var express=require('express')
-var router=express.Router()
+var express = require("express");
+var router = express.Router();
+var adminHelper=require('../controllers/admin-controller')
 
 
 
-router.get('/',(req,res)=>{
-    // console.log("api calling");
-    // res.json('hi Admin');
+router.post('/addTeacher',adminHelper.addTeacher)
+router.get('/getTeacher',adminHelper.getTeacherDetails)
+router.post('/deleteTeacher/:id',adminHelper.deleteTeacher)
 
-    try {
-        res.json({ message: "Sample from server" });
-      } catch (error) {
-        console.log(error);
-        res.json(error);
-      }
-})
-
-router.get('/login',(req,res)=>{
-    res.json('In login page')
-})
-
-
-
-
-module.exports=router;
+module.exports = router;
