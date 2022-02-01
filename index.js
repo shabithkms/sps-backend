@@ -9,16 +9,11 @@ var adminRouter = require("./routes/admin");
 var studentRouter = require("./routes/student");
 var teacherRouter = require("./routes/teacher");
 var reviewerRouter = require("./routes/reviewer");
-app.get("/", (req, res) => {
-  console.log("Api call");
-  res.send("Hi iam shabith");
-});
+
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`server running on ${PORT}`);
 });
-
-
 
 //Middlewaress
 app.use(express.json());
@@ -41,7 +36,7 @@ db.connect((err) => {
   }
 });
 
-
+//Routes
 app.use("/", studentRouter);
 app.use("/admin", adminRouter);
 app.use("/teacher", teacherRouter);

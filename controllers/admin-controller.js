@@ -11,16 +11,22 @@ console.log(BASE_URL);
 
 module.exports = {
   addTeacher: (req, res) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const { name, email } = req.body;
       var password = generator.generate({
         length: 10,
         numbers: true,
       });
+      let userExist = await db
+        .get()
+        .collection(collection.TEACHER_COLLECTION)
+        .findOne({ email: email });
+      if (userExist)
+        return res.status(401).json({ errors: "Teacher already exists" });
       try {
         db.get()
           .collection(collection.TEACHER_COLLECTION)
-          .insertOne({ name, email, password })
+          .insertOne({ name, email })
           .then((response) => {
             console.log(response);
             res.status(200).json({ result: "success" });
