@@ -6,9 +6,11 @@ var generator = require("generate-password");
 const jwt = require("jsonwebtoken");
 const jwt_decode = require("jwt-decode");
 const bcrypt = require("bcryptjs");
+const multer  = require('multer')
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BASE_URL = process.env.BASE;
+const upload = multer({ dest: 'uploads/' })
 
 module.exports = {
   teacherLogin: (req, res) => {
@@ -81,12 +83,74 @@ module.exports = {
   getTeacherData: (req, res) => {
     let id = req.params.id;
     return new Promise(async (resolve, reject) => {
-      let teacherData = await db
-        .get()
-        .collection(collection.TEACHER_COLLECTION)
-        .findOne({ _id: objectId(id) });
-      delete teacherData.password;
-      return res.status(200).json({ response: "success", teacherData });
+      try {
+        let teacherData = await db
+          .get()
+          .collection(collection.TEACHER_COLLECTION)
+          .findOne({ _id: objectId(id) });
+        delete teacherData.password;
+        return res.status(200).json({ response: "success", teacherData });
+      } catch (error) {
+        res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
+  getDomains: (req, res) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let domains = await db
+          .get()
+          .collection(collection.DOMAIN_COLLECTION)
+          .find()
+          .toArray();
+        res.status(200).json({ domains });
+      } catch (error) {
+        return res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
+  addNewDomain: (req, res) => {
+    return new Promise(async (resolve, reject) => {
+      const { name } = req.body;
+      try {
+        let domain = await db
+          .get()
+          .collection(collection.DOMAIN_COLLECTION)
+          .findOne({ DomainName: name });
+        if (!domain) {
+          db.get()
+            .collection(collection.DOMAIN_COLLECTION)
+            .insertOne({ DomainName: name })
+            .then((response) => {
+              return res.status(200).json({ response: "Added successfully" });
+            });
+        } else {
+          return res.status(400).json({ errors: "This doamin already exist" });
+        }
+      } catch (error) {}
+    });
+  },
+  deleteDomain: (req, res) => {
+    return new Promise((resolve, reject) => {
+      let { domainId } = req.body;
+      db.get()
+        .collection(collection.DOMAIN_COLLECTION)
+        .deleteOne({ _id: objectId(domainId) })
+        .then((response) => {
+          return res.status(200).json({ response: "deleted successfully" });
+        });
+      try {
+      } catch (error) {
+        return res.json({ errors: "Something error" });
+      }
+    });
+  },
+  updateProfile: (req, res) => {
+    return new Promise((resolve, reject) => {
+      console.log("api call");
+      console.log(req.file);
+      const { name, email, phone, address } = req.body;
+      console.log(name, email, phone, address);
     });
   },
 };
