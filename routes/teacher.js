@@ -10,14 +10,9 @@ router.post("/signup", teacherController.teacherSignup);
 
 // Teacher profile
 router.get("/getTeacherData/:id", teacherController.getTeacherData);
-// router.post("/editProfile", upload.single("image"), (req, res) => {
-//     console.log((req.file));
-// });
-router.post(
-  "/editProfile",
-  upload.single("image"),
-  teacherController.updateProfile
-);
+router.post("/editProfile", teacherController.updateProfile);
+
+router.post("/editPhoto", upload.single("image"), teacherController.editPhoto);
 
 // Domain Management
 router.get("/getDomains", teacherController.getDomains);

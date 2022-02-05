@@ -6,11 +6,13 @@ var generator = require("generate-password");
 const jwt = require("jsonwebtoken");
 const jwt_decode = require("jwt-decode");
 const bcrypt = require("bcryptjs");
-const multer  = require('multer')
+const multer = require("multer");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BASE_URL = process.env.BASE;
-const upload = multer({ dest: 'uploads/' })
+const upload = multer({ dest: "uploads/" });
+
+const { uploadFile, getFileStream } = require("../utils/s3");
 
 module.exports = {
   teacherLogin: (req, res) => {
@@ -146,11 +148,68 @@ module.exports = {
     });
   },
   updateProfile: (req, res) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      let address = "";
+      let mobile = "";
+      try {
+        const { _id, name, email } = req.body;
+
+        if (req.body.mobile) mobile = req.body.mobile;
+        if (req.body.address) address = req.body.address;
+
+        db.get()
+          .collection(collection.TEACHER_COLLECTION)
+          .updateOne(
+            { _id: objectId(_id) },
+            {
+              $set: {
+                name,
+                email,
+                mobile,
+                address,
+              },
+            }
+          )
+          .then((response) => {
+            res.status(200).json({ response: "Profile edited successfully" });
+          })
+          .catch((err) => {
+            res.status(500).json({ errors: "Something error" });
+          });
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
+  editPhoto: (req, res) => {
+    return new Promise(async (resolve, reject) => {
       console.log("api call");
-      console.log(req.file);
-      const { name, email, phone, address } = req.body;
-      console.log(name, email, phone, address);
+      const file = req.file;
+      console.log("fil", file);
+      let { _id } = req.body;
+      if (file) {
+        try {
+          let result = await uploadFile(file);
+          db.get()
+            .collection(collection.TEACHER_COLLECTION)
+            .updateOne(
+              { _id: objectId(_id) },
+              {
+                $set: {
+                  profile: result.Location,
+                },
+              },
+              { upsert: true }
+            )
+            .then((response) => {
+              res.json({ message: "image changed successfully" });
+            });
+        } catch (error) {
+          console.log(error);
+          res.status(500).json({ errors: "Something error" });
+        }
+      }
     });
   },
 };
