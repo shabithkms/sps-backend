@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const jwt_decode = require("jwt-decode");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
+const fs = require("fs");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BASE_URL = process.env.BASE;
@@ -15,6 +16,7 @@ const upload = multer({ dest: "uploads/" });
 const { uploadFile, getFileStream } = require("../utils/s3");
 
 module.exports = {
+  // Teacher Authentication section
   teacherLogin: (req, res) => {
     return new Promise(async (resolve, reject) => {
       const { email, password } = req.body;
@@ -97,6 +99,8 @@ module.exports = {
       }
     });
   },
+
+  // Domain management
   getDomains: (req, res) => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -147,6 +151,8 @@ module.exports = {
       }
     });
   },
+
+  // Teacher profile section
   updateProfile: (req, res) => {
     return new Promise(async (resolve, reject) => {
       let address = "";
@@ -186,10 +192,12 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       console.log("api call");
       const file = req.file;
-      console.log("fil", file);
+
       let { _id } = req.body;
+      console.log(_id);
       if (file) {
         try {
+          let oldFilename = file.filename;
           let result = await uploadFile(file);
           db.get()
             .collection(collection.TEACHER_COLLECTION)
@@ -203,12 +211,73 @@ module.exports = {
               { upsert: true }
             )
             .then((response) => {
+              fs.unlinkSync(`uploads/${oldFilename}`);
+              console.log("file deleted");
               res.json({ message: "image changed successfully" });
             });
         } catch (error) {
           console.log(error);
           res.status(500).json({ errors: "Something error" });
         }
+      }
+    });
+  },
+  // Student Management
+  getAllBatches: (req, res) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let batches = await db
+          .get()
+          .collection(collection.BATCH_COLLECTION)
+          .find()
+          .toArray();
+        return res
+          .status(200)
+          .json({ message: "Batches got successfully", batches });
+      } catch (error) {
+        return res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
+  addStudent: (req, res) => {
+    return new Promise(async (resolve, reject) => {
+      console.log(req.body);
+      const { Email } = req.body;
+      console.log(Email);
+      try {
+        let student = await db
+          .get()
+          .collection(collection.BATCH_COLLECTION)
+          .findOne({ Email });
+        if (!student) {
+          db.get()
+            .collection(collection.STUDENT_COLLECTION)
+            .insertOne(req.body)
+            .then((response) => {
+              res.status(200).json({ message: "Student added successfully" });
+            });
+        } else {
+          return res.status(400).json({ errors: "Student already exist" });
+        }
+      } catch (error) {
+        return res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
+  getAllStudents: (req, res) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let students = await db
+          .get()
+          .collection(collection.STUDENT_COLLECTION)
+          .find()
+          .toArray();
+        return res
+          .status(200)
+          .json({ message: "Students got successfully" ,students});
+      } catch (error) {
+        console.log(error); 
+        res.status(500).json({ errors: error.message });
       }
     });
   },

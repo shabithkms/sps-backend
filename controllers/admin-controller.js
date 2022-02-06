@@ -125,4 +125,69 @@ module.exports = {
       res.status(400).json({ message: "Something error" });
     }
   },
+  addBatch: (req, res) => {
+    return new Promise(async (resolve, reject) => {
+      let { BatchName, Place } = req.body;
+      try {
+        let batch = await db
+          .get()
+          .collection(collection.BATCH_COLLECTION)
+          .findOne({ BatchName });
+        if (!batch) {
+          console.log("in added");
+          db.get()
+            .collection(collection.BATCH_COLLECTION)
+            .insertOne({ BatchName, Place, Students: [], Count: 0 })
+            .then((response) => {
+              console.log(response);
+              return res
+                .status(200)
+                .json({ message: "Batch added successfully" });
+            });
+        } else {
+          return res.status(404).json({ errors: "Batch already exist" });
+        }
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
+  getAllBatches: (req, res) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let batches = await db
+          .get()
+          .collection(collection.BATCH_COLLECTION)
+          .find()
+          .toArray();
+        return res
+          .status(200)
+          .json({ message: "Batches got successfully", batches });
+      } catch (error) {
+        return res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
+  deleteBatch: (req, res) => {
+    return new Promise((resolve, reject) => {
+      let { id } = req.params;
+      try {
+        db.get()
+          .collection(collection.BATCH_COLLECTION)
+          .deleteOne({ _id: objectId(id) })
+          .then((response) => {
+            console.log(response);
+            return res.status(200).json({ message: "Deleted successfully" });
+          })
+          .catch((err) => {
+            console.log(err);
+            return res.status(400).json({ errors: "Something error" });
+          });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ errors: "Something error" });
+      }
+    });
+  },
 };
