@@ -57,13 +57,21 @@ module.exports = {
           .findOne({ Email });
         console.log(student);
         if (student) {
-            let status=await bcrypt.compare()
+          let status = await bcrypt.compare(Password, student.hashedPassword);
+          if (status) {
+            delete student.hashedPassword;
+            return res
+              .status(200)
+              .json({ message: "Signed in successfully", student });
+          } else {
+            return res.status(401).json({ errors: "Incorrect password" });
+          }
         } else {
-            return res.status(404).json({errors:'Student doesnot exist'})
+          return res.status(404).json({ errors: "Student doesnot exist" });
         }
       } catch (error) {
         console.log(error);
-        res.status(500).json({errors:'Something error'})
+        res.status(500).json({ errors: "Something error" });
       }
     });
   },
