@@ -229,7 +229,7 @@ module.exports = {
         let batches = await db
           .get()
           .collection(collection.BATCH_COLLECTION)
-          .find()
+          .find().sort({$natural:-1})
           .toArray();
         return res
           .status(200)
@@ -247,11 +247,11 @@ module.exports = {
       try {
         let student = await db
           .get()
-          .collection(collection.BATCH_COLLECTION)
+          .collection(collection.PASSED_STUDENT_COLLECTION)
           .findOne({ Email });
         if (!student) {
           db.get()
-            .collection(collection.STUDENT_COLLECTION)
+            .collection(collection.PASSED_STUDENT_COLLECTION)
             .insertOne(req.body)
             .then((response) => {
               res.status(200).json({ message: "Student added successfully" });
@@ -269,7 +269,7 @@ module.exports = {
       try {
         let students = await db
           .get()
-          .collection(collection.STUDENT_COLLECTION)
+          .collection(collection.PASSED_STUDENT_COLLECTION)
           .find()
           .toArray();
         return res
