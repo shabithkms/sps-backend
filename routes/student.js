@@ -7,6 +7,9 @@ const studentController=require('../controllers/student-controller')
 router.post('/signup',studentController.doSignup)
 router.post('/login',studentController.doLogin)
 
+// Profile Management
+router.post('/editProfile',studentController.editProfile)
+
 
 
 module.exports=router;

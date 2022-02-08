@@ -75,4 +75,15 @@ module.exports = {
       }
     });
   },
+  editProfile: (req, res) => {
+    return new Promise((resolve, reject) => {
+      console.log(req.body);
+      try {
+        db.get().collection(collection.STUDENT_COLLECTION).updateOne({})
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ errors: "Sometthing error" });
+      }
+    });
+  },
 };
