@@ -11,13 +11,13 @@ console.log(BASE_URL);
 
 module.exports = {
   addTeacher: (req, res) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async () => {
       const { name, email } = req.body;
       var password = generator.generate({
         length: 10,
         numbers: true,
       });
-      let userExist = await db
+      const userExist = await db
         .get()
         .collection(collection.TEACHER_COLLECTION)
         .findOne({ email: email });
@@ -42,7 +42,7 @@ module.exports = {
             });
             const link = `${BASE_URL}/teacher/${token}`;
             console.log(link);
-            let transporter = nodemailer.createTransport({
+            const transporter = nodemailer.createTransport({
               service: "gmail",
               auth: {
                 user: process.env.FROM_MAIL,
@@ -50,7 +50,7 @@ module.exports = {
               },
             });
 
-            let mailOptions = {
+            const mailOptions = {
               from: process.env.FROM_MAIL,
               to: "shabithkms2035@gmail.com",
               subject: "Registration success",
@@ -75,7 +75,7 @@ module.exports = {
               `,
             };
 
-            transporter.sendMail(mailOptions, function (err, data) {
+            transporter.sendMail(mailOptions, function (err) {
               if (err) {
                 console.log(err);
               } else {
@@ -93,8 +93,8 @@ module.exports = {
   },
   getTeacherDetails: (req, res) => {
     try {
-      return new Promise(async (resolve, reject) => {
-        let teachers = await db
+      return new Promise(async () => {
+        const teachers = await db
           .get()
           .collection(collection.TEACHER_COLLECTION)
           .find()
@@ -126,10 +126,10 @@ module.exports = {
     }
   },
   addBatch: (req, res) => {
-    return new Promise(async (resolve, reject) => {
-      let { BatchName, Place } = req.body;
+    return new Promise(async () => {
+      const { BatchName, Place } = req.body;
       try {
-        let batch = await db
+        const batch = await db
           .get()
           .collection(collection.BATCH_COLLECTION)
           .findOne({ BatchName });
@@ -154,9 +154,9 @@ module.exports = {
     });
   },
   getAllBatches: (req, res) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async () => {
       try {
-        let batches = await db
+        const batches = await db
           .get()
           .collection(collection.BATCH_COLLECTION)
           .find()
@@ -170,8 +170,8 @@ module.exports = {
     });
   },
   deleteBatch: (req, res) => {
-    return new Promise((resolve, reject) => {
-      let { id } = req.params;
+    return new Promise(() => {
+      const { id } = req.params;
       try {
         db.get()
           .collection(collection.BATCH_COLLECTION)

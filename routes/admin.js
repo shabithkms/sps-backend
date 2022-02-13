@@ -1,16 +1,23 @@
 var express = require("express");
 var router = express.Router();
-var adminController=require('../controllers/admin-controller')
-
+var adminController = require("../controllers/admin-controller");
 
 // Teacher Management
-router.post('/addTeacher',adminController.addTeacher)
-router.get('/getTeacher',adminController.getTeacherDetails)
-router.post('/deleteTeacher/:id',adminController.deleteTeacher)
+
+// Add teacher with Email
+router.post("/addTeacher", adminController.addTeacher);
+// Get all registered teacher
+router.get("/getTeacher", adminController.getTeacherDetails);
+// Delete teacher with teacher id
+router.post("/deleteTeacher/:id", adminController.deleteTeacher);
 
 // Batch Management
-router.post('/addBatch',adminController.addBatch)
-router.get('/getAllBatches',adminController.getAllBatches)
-router.delete('/deleteBatch/:id',adminController.deleteBatch)
+
+// Add batch with Name and Place
+router.post("/addBatch", adminController.addBatch);
+// Get all batches
+router.get("/getAllBatches", adminController.getAllBatches);
+// Delete batch with id
+router.delete("/deleteBatch/:id", adminController.deleteBatch);
 
 module.exports = router;

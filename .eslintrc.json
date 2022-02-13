@@ -1,0 +1,25 @@
+{
+    "env": {
+        "node": true,
+        "commonjs": true,
+        "es2021": true,
+        "jest": true
+    },
+    "extends": [
+        "prettier"
+    ],
+    "plugins": ["prettier"],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        // "prettier/prettier":"error",
+        "no-unused-vars":"warn",
+        "no-console":"off",
+        "prefer-const":"warn",
+        "func-names":"off",
+        "object-shorthand":"off",
+        "class-methods-use-this":"off"
+        
+    }
+}

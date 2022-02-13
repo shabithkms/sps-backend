@@ -1,11 +1,8 @@
-var express=require('express')
-var router=express.Router()
+var express = require('express');
+var router = express.Router();
+const reviewerController = require('../controllers/reviewer-controller');
 
+router.post('/login', reviewerController.doLogin);
+router.post('/signup', reviewerController.doSignup);
 
-router.get('/',(req,res)=>{
-    res.send('hi Reviewer');
-})
-
-
-
-module.exports=router;
+module.exports = router;

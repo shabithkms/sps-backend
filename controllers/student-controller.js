@@ -7,9 +7,9 @@ module.exports = {
   doSignup: (req, res) => {
     return new Promise(async (resolve, reject) => {
       const { Name, Email, Password } = req.body;
-      let hashedPassword = await bcrypt.hash(Password, 10);
+      const hashedPassword = await bcrypt.hash(Password, 10);
       try {
-        let exist = await db
+        const exist = await db
           .get()
           .collection(collection.PASSED_STUDENT_COLLECTION)
           .findOne({ Email });
@@ -49,15 +49,15 @@ module.exports = {
   doLogin: (req, res) => {
     return new Promise(async (resolve, reject) => {
       console.log(req.body);
-      let { Email, Password } = req.body;
+      const { Email, Password } = req.body;
       try {
-        let student = await db
+        const student = await db
           .get()
           .collection(collection.STUDENT_COLLECTION)
           .findOne({ Email });
         console.log(student);
         if (student) {
-          let status = await bcrypt.compare(Password, student.hashedPassword);
+          const status = await bcrypt.compare(Password, student.hashedPassword);
           if (status) {
             delete student.hashedPassword;
             return res
@@ -79,7 +79,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       console.log(req.body);
       try {
-        db.get().collection(collection.STUDENT_COLLECTION).updateOne({})
+        db.get().collection(collection.STUDENT_COLLECTION).updateOne({});
       } catch (error) {
         console.log(error);
         return res.status(500).json({ errors: "Sometthing error" });

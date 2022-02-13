@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "lint": "eslint ./",
+    "lint-fix":"eslint ./ --fix"
   },
   "author": "",
   "license": "ISC",
@@ -23,5 +25,13 @@
     "multer": "^1.4.4",
     "nodemailer": "^6.7.2",
     "nodemon": "^2.0.15"
+  },
+  "devDependencies": {
+    "eslint": "^8.8.0",
+    "eslint-config-node": "^4.1.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1"
   }
 }

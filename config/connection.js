@@ -1,21 +1,21 @@
-const mongoClient = require('mongodb' ).MongoClient
+const mongoClient = require("mongodb").MongoClient;
 
-const state={
-    db:null
+const state = {
+  db: null,
 };
 
-module.exports.connect=function(done){
-    const url=process.env.URL
-    const dbname=process.env.DB_NAME
-    console.log(url,dbname);
+module.exports.connect = function (done) {
+  const url = process.env.URL;
+  const dbname = process.env.DB_NAME;
+  console.log(url, dbname);
 
-    mongoClient.connect(url,(err,data)=>{
-        if(err) return done(err);
-        state.db=data.db(dbname)
-        done();
-    })
-}
+  mongoClient.connect(url, (err, data) => {
+    if (err) return done(err);
+    state.db = data.db(dbname);
+    done();
+  });
+};
 
-module.exports.get=function(){
-    return state.db;
-}
+module.exports.get = function () {
+  return state.db;
+};
