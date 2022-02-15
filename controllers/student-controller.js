@@ -6,69 +6,65 @@ const { uploadFile } = require('../utils/s3');
 const fs = require('fs');
 
 module.exports = {
-  doSignup: (req, res) => {
-    return new Promise(async (resolve, reject) => {
+  doSignup: async (req, res) => {
+    try {
       const { Name, Email, Password } = req.body;
       const hashedPassword = await bcrypt.hash(Password, 10);
-      try {
-        const exist = await db
-          .get()
-          .collection(collection.PASSED_STUDENT_COLLECTION)
-          .findOne({ Email });
-        console.log(exist);
+      return new Promise(async () => {
+        // Checking the student is selected for SPS
+        const exist = await db.get().collection(collection.PASSED_STUDENT_COLLECTION).findOne({ Email });
+        const student = await db.get().collection(collection.STUDENT_COLLECTION).findOne({ Email });
         if (exist) {
-          db.get()
-            .collection(collection.STUDENT_COLLECTION)
-            .updateOne(
-              { Email },
-              {
-                $set: {
-                  Name,
-                  Email,
-                  hashedPassword,
-                  Week: 1,
-                  Batch: exist.Batch,
-                },
-              },
-              { upsert: true }
-            )
-            .then((response) => {
-              return res
-                .status(200)
-                .json({ message: 'Registered successfully' });
-            });
+          if (!student) {
+            db.get()
+              .collection(collection.STUDENT_COLLECTION)
+              .insertOne({
+                Name,
+                Email,
+                hashedPassword,
+                Week: 1,
+                Batch: exist.Batch
+              })
+              .then(() => {
+                return res.status(200).json({ message: 'Registered successfully' });
+              });
+          } else {
+            return res.status(401).json({ errors: 'This email is already registered' });
+          }
         } else {
-          return res
-            .status(401)
-            .json({ errors: 'You are not selected for SPS' });
+          // Student not selected
+          return res.status(401).json({ errors: 'You are not selected for SPS' });
         }
-      } catch (error) {
-        console.log(error);
-        res.status(500).json({ errors: 'Something error' });
-      }
-    });
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ errors: 'Something error' });
+    }
   },
   doLogin: (req, res) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async () => {
       console.log(req.body);
+
       const { Email, Password } = req.body;
+
       try {
-        const student = await db
-          .get()
-          .collection(collection.STUDENT_COLLECTION)
-          .findOne({ Email });
+        // Checking the user is valid or invalid
+        const student = await db.get().collection(collection.STUDENT_COLLECTION).findOne({ Email });
         console.log(student);
         if (student) {
+          // Comparing the passwords with bcrypt
           const status = await bcrypt.compare(Password, student.hashedPassword);
+
           if (status) {
+            // Password matched logged in success
             delete student.hashedPassword;
-            return res
-              .status(200)
-              .json({ message: 'Signed in successfully', student });
+            return res.status(200).json({ message: 'Signed in successfully', student });
           } else {
+            // Invalid password
             return res.status(401).json({ errors: 'Incorrect password' });
           }
         } else {
+          // Student not exist with the Email
           return res.status(404).json({ errors: 'Student doesnot exist' });
         }
       } catch (error) {
@@ -150,11 +146,9 @@ module.exports = {
                   }
                 );
             }
+            // Get student data with Email
+            const student = await db.get().collection(collection.STUDENT_COLLECTION).findOne({ Email });
 
-            let student = await db
-              .get()
-              .collection(collection.STUDENT_COLLECTION)
-              .findOne({ Email });
             res.status(200).json({ message: 'updated successfully', student });
           });
       } catch (error) {

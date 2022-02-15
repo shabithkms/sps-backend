@@ -8,12 +8,8 @@ const studentController = require('../controllers/student-controller');
 router.post('/signup', studentController.doSignup);
 router.post('/login', studentController.doLogin);
 
-// Profile Management
-router.post(
-  '/editProfile',
-  upload.single('ID_Proof'),
-  studentController.editProfile
-);
-router.get('/getStudentData/:id', studentController.getStudentData);
+// Profile Management of student
+// Editing the profile datas
+router.post('/editProfile', upload.single('ID_Proof'), studentController.editProfile);
 
 module.exports = router;

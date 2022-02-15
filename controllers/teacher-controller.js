@@ -14,26 +14,22 @@ const upload = multer({ dest: 'uploads/' });
 var generator = require('generate-password');
 
 const { uploadFile } = require('../utils/s3');
+const { log } = require('console');
 
 module.exports = {
   // Teacher Authentication section
   teacherLogin: (req, res) => {
     return new Promise(async () => {
-      const { email, password } = req.body;
+      const { Email, Password } = req.body;
 
       try {
-        const teacher = await db
-          .get()
-          .collection(collection.TEACHER_COLLECTION)
-          .findOne({ email });
+        const teacher = await db.get().collection(collection.TEACHER_COLLECTION).findOne({ Email });
 
         if (teacher) {
-          const status = await bcrypt.compare(password, teacher.password);
-          delete teacher.password;
+          const status = await bcrypt.compare(Password, teacher.Password);
+          delete teacher.Password;
           if (status) {
-            return res
-              .status(200)
-              .json({ message: 'Loggedin successfully', teacher });
+            return res.status(200).json({ message: 'Loggedin successfully', teacher });
           } else {
             return res.status(401).json({ errors: 'Invalid password' });
           }
@@ -48,38 +44,35 @@ module.exports = {
   teacherSignup: (req, res) => {
     return new Promise(async () => {
       try {
-        const { name, email, password, token } = req.body;
+        console.log(req.body);
+        const { Name, Email, Password, token } = req.body;
         const decoded = jwt_decode(token);
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(Password, 10);
 
         // Checking the email and token email
-        if (email === decoded.email) {
+        if (Email === decoded.email) {
           const hi = await db
             .get()
             .collection(collection.TEACHER_COLLECTION)
             .updateOne(
-              { email },
+              { Email },
               {
                 $set: {
-                  name,
-                  email,
-                  password: hashedPassword,
+                  Name,
+                  Email,
+                  Password: hashedPassword,
                 },
               },
               { upsert: true }
             );
-          const teacher = await db
-            .get()
-            .collection(collection.TEACHER_COLLECTION)
-            .findOne({ email });
-          delete teacher.password;
-          return res
-            .status(200)
-            .json({ message: 'Registered successfully', teacher });
+          const teacher = await db.get().collection(collection.TEACHER_COLLECTION).findOne({ Email });
+          delete teacher.Password;
+          return res.status(200).json({ message: 'Registered successfully', teacher });
         } else {
           return res.status(401).json({ errors: 'Not a registered Email' });
         }
       } catch (error) {
+        console.log(error);
         return res.status(500).json({ errors: 'Something error' });
       }
     });
@@ -104,11 +97,7 @@ module.exports = {
   getDomains: (req, res) => {
     return new Promise(async () => {
       try {
-        const domains = await db
-          .get()
-          .collection(collection.DOMAIN_COLLECTION)
-          .find()
-          .toArray();
+        const domains = await db.get().collection(collection.DOMAIN_COLLECTION).find().toArray();
         res.status(200).json({ domains });
       } catch (error) {
         return res.status(500).json({ errors: 'Something error' });
@@ -120,18 +109,13 @@ module.exports = {
       console.log(req.body);
       const { DomainName } = req.body;
       try {
-        const domain = await db
-          .get()
-          .collection(collection.DOMAIN_COLLECTION)
-          .findOne({ DomainName });
+        const domain = await db.get().collection(collection.DOMAIN_COLLECTION).findOne({ DomainName });
         if (!domain) {
           db.get()
             .collection(collection.DOMAIN_COLLECTION)
             .insertOne({ DomainName })
             .then(() => {
-              return res
-                .status(200)
-                .json({ message: 'Domain added successfully' });
+              return res.status(200).json({ message: 'Domain added successfully' });
             });
         } else {
           return res.status(400).json({ errors: 'This doamin already exist' });
@@ -160,13 +144,13 @@ module.exports = {
   // Teacher profile section
   updateProfile: (req, res) => {
     return new Promise(async () => {
-      let address = '';
-      let mobile = '';
+      let Address = '';
+      let Mobile = '';
       try {
-        const { _id, name, email } = req.body;
+        const { _id, Name, Email } = req.body;
 
-        if (req.body.mobile) mobile = req.body.mobile;
-        if (req.body.address) address = req.body.address;
+        if (req.body.Mobile) Mobile = req.body.Mobile;
+        if (req.body.Address) Address = req.body.Address;
 
         db.get()
           .collection(collection.TEACHER_COLLECTION)
@@ -174,10 +158,10 @@ module.exports = {
             { _id: objectId(_id) },
             {
               $set: {
-                name,
-                email,
-                mobile,
-                address,
+                Name,
+                Email,
+                Mobile,
+                Address,
               },
             }
           )
@@ -210,7 +194,7 @@ module.exports = {
               { _id: objectId(_id) },
               {
                 $set: {
-                  profile: result.Location,
+                  Profile: result.Location,
                 },
               },
               { upsert: true }
@@ -234,15 +218,8 @@ module.exports = {
   getAllBatches: (req, res) => {
     return new Promise(async () => {
       try {
-        const batches = await db
-          .get()
-          .collection(collection.BATCH_COLLECTION)
-          .find()
-          .sort({ $natural: -1 })
-          .toArray();
-        return res
-          .status(200)
-          .json({ message: 'Batches got successfully', batches });
+        const batches = await db.get().collection(collection.BATCH_COLLECTION).find().sort({ $natural: -1 }).toArray();
+        return res.status(200).json({ message: 'Batches got successfully', batches });
       } catch (error) {
         return res.status(500).json({ errors: 'Something error' });
       }
@@ -251,17 +228,15 @@ module.exports = {
   addStudent: (req, res) => {
     return new Promise(async () => {
       console.log(req.body);
-      const { Email } = req.body;
+      const { Email, Name, Batch } = req.body;
+
       console.log(Email);
       try {
-        const student = await db
-          .get()
-          .collection(collection.PASSED_STUDENT_COLLECTION)
-          .findOne({ Email });
+        const student = await db.get().collection(collection.PASSED_STUDENT_COLLECTION).findOne({ Email });
         if (!student) {
           db.get()
             .collection(collection.PASSED_STUDENT_COLLECTION)
-            .insertOne(req.body)
+            .insertOne({ Name, Email, Batch})
             .then(() => {
               res.status(200).json({ message: 'Student added successfully' });
             });
@@ -276,14 +251,8 @@ module.exports = {
   getAllStudents: (req, res) => {
     return new Promise(async () => {
       try {
-        const students = await db
-          .get()
-          .collection(collection.PASSED_STUDENT_COLLECTION)
-          .find()
-          .toArray();
-        return res
-          .status(200)
-          .json({ message: 'Students got successfully', students });
+        const students = await db.get().collection(collection.PASSED_STUDENT_COLLECTION).find().toArray();
+        return res.status(200).json({ message: 'Students got successfully', students });
       } catch (error) {
         console.log(error);
         res.status(500).json({ errors: error.message });
@@ -294,12 +263,7 @@ module.exports = {
   //Reviewer Management
   getAllReviewer: async (req, res) => {
     try {
-      const reviewers = await db
-        .get()
-        .collection(collection.REVIEWER_COLLECTION)
-        .find()
-        .toArray();
-      console.log('reviewrw', reviewers);
+      const reviewers = await db.get().collection(collection.REVIEWER_COLLECTION).find().toArray();
       return res.status(200).json({ message: 'Success', reviewers });
     } catch (error) {
       console.log(error);
@@ -308,10 +272,7 @@ module.exports = {
   addNewReviewer: async (req, res) => {
     try {
       const { Name, Email } = req.body;
-      let reviewerExist = await db
-        .get()
-        .collection(collection.REVIEWER_COLLECTION)
-        .findOne({ Email });
+      let reviewerExist = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
       req.body.Registered = false;
       console.log(reviewerExist);
       if (!reviewerExist) {

@@ -40,7 +40,7 @@ module.exports = {
             const token = jwt.sign(payload, secret, {
               expiresIn: "15m",
             });
-            const link = `${BASE_URL}/teacher/${token}`;
+            const link = `${BASE_URL}/teacher/register/${token}`;
             console.log(link);
             const transporter = nodemailer.createTransport({
               service: "gmail",
