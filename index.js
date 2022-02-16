@@ -25,6 +25,10 @@ app.use(
   })
 );
 
+app.get('/api',(req,res)=>{
+  res.send("Welcome to SPS Api service")
+})
+
 //Database connection
 var db = require("./config/connection");
 db.connect((err) => {
