@@ -23,7 +23,7 @@ module.exports = {
                 Email,
                 hashedPassword,
                 Week: 1,
-                Batch: exist.Batch
+                Batch: exist.Batch,
               })
               .then(() => {
                 return res.status(200).json({ message: 'Registered successfully' });
@@ -38,7 +38,7 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ errors: 'Something error' });
+      res.status(500).json({ errors: error.message });
     }
   },
   doLogin: (req, res) => {
@@ -69,7 +69,7 @@ module.exports = {
         }
       } catch (error) {
         console.log(error);
-        res.status(500).json({ errors: 'Something error' });
+        res.status(500).json({ errors: error.message });
       }
     });
   },

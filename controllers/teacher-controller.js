@@ -14,7 +14,6 @@ const upload = multer({ dest: 'uploads/' });
 var generator = require('generate-password');
 
 const { uploadFile } = require('../utils/s3');
-const { log } = require('console');
 
 module.exports = {
   // Teacher Authentication section
@@ -37,7 +36,8 @@ module.exports = {
           return res.status(401).json({ errors: 'Not a registered email' });
         }
       } catch (error) {
-        return res.status(500).json({ errors: 'Something error' });
+        console.log(error);
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -73,7 +73,7 @@ module.exports = {
         }
       } catch (error) {
         console.log(error);
-        return res.status(500).json({ errors: 'Something error' });
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -88,7 +88,8 @@ module.exports = {
         delete teacherData.password;
         return res.status(200).json({ response: 'success', teacherData });
       } catch (error) {
-        res.status(500).json({ errors: 'Something error' });
+        console.log(error);
+        res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -100,7 +101,8 @@ module.exports = {
         const domains = await db.get().collection(collection.DOMAIN_COLLECTION).find().toArray();
         res.status(200).json({ domains });
       } catch (error) {
-        return res.status(500).json({ errors: 'Something error' });
+        console.log(error);
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -122,6 +124,7 @@ module.exports = {
         }
       } catch (error) {
         console.log(error);
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -136,7 +139,8 @@ module.exports = {
         });
       try {
       } catch (error) {
-        return res.json({ errors: 'Something error' });
+        console.log(error);
+        return res.json({ errors: error.message });
       }
     });
   },
@@ -168,12 +172,12 @@ module.exports = {
           .then(() => {
             res.status(200).json({ response: 'Profile edited successfully' });
           })
-          .catch(() => {
-            res.status(500).json({ errors: 'Something error' });
+          .catch((err) => {
+            res.status(500).json({ errors: err.message });
           });
       } catch (error) {
         console.log(error);
-        res.status(500).json({ errors: 'Something error' });
+        res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -209,7 +213,7 @@ module.exports = {
             });
         } catch (error) {
           console.log(error);
-          res.status(500).json({ errors: 'Something error' });
+          res.status(500).json({ errors: error.message });
         }
       }
     });
@@ -221,7 +225,8 @@ module.exports = {
         const batches = await db.get().collection(collection.BATCH_COLLECTION).find().sort({ $natural: -1 }).toArray();
         return res.status(200).json({ message: 'Batches got successfully', batches });
       } catch (error) {
-        return res.status(500).json({ errors: 'Something error' });
+        console.log(error);
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -236,7 +241,7 @@ module.exports = {
         if (!student) {
           db.get()
             .collection(collection.PASSED_STUDENT_COLLECTION)
-            .insertOne({ Name, Email, Batch})
+            .insertOne({ Name, Email, Batch })
             .then(() => {
               res.status(200).json({ message: 'Student added successfully' });
             });
@@ -244,7 +249,8 @@ module.exports = {
           return res.status(400).json({ errors: 'Student already exist' });
         }
       } catch (error) {
-        return res.status(500).json({ errors: 'Something error' });
+        console.log(error);
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -339,6 +345,7 @@ module.exports = {
       }
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ errors: error.message });
     }
   },
   deleteReviewer: async (req, res) => {

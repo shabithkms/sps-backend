@@ -7,16 +7,13 @@ module.exports = {
     console.log(req.body);
     try {
       const { Email, Password } = req.body;
-      let reviewer = await db
-        .get()
-        .collection(collection.REVIEWER_COLLECTION)
-        .findOne({ Email });
+      let reviewer = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
 
       if (reviewer) {
         let status = await bcrypt.compare(Password, reviewer.Password);
         if (status) {
-          delete reviewer.Password
-          res.status(200).json({message:"Loggedin successfully",reviewer})
+          delete reviewer.Password;
+          res.status(200).json({ message: 'Loggedin successfully', reviewer });
         } else {
           res.status(401).json({ errors: 'Incorrect passowrd' });
         }
@@ -25,6 +22,7 @@ module.exports = {
       }
       console.log(reviewer);
     } catch (error) {
+      console.log(error);
       res.status(500).json({ errors: error.message });
     }
   },
@@ -32,10 +30,7 @@ module.exports = {
     try {
       const { Name, Email, Password } = req.body;
       const hashedPassword = await bcrypt.hash(Password, 10);
-      const exist = await db
-        .get()
-        .collection(collection.REVIEWER_COLLECTION)
-        .findOne({ Email });
+      const exist = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
       if (!exist.Registered) {
         const update = await db
           .get()
@@ -52,19 +47,12 @@ module.exports = {
             },
             { upsert: true }
           );
-        const reviewer = await db
-          .get()
-          .collection(collection.REVIEWER_COLLECTION)
-          .findOne({ Email });
+        const reviewer = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
         delete reviewer.Password;
-        return res
-          .status(200)
-          .json({ message: 'Registered successfully', reviewer });
+        return res.status(200).json({ message: 'Registered successfully', reviewer });
       } else {
         console.log('already');
-        return res
-          .status(400)
-          .json({ errors: 'This email is already registered' });
+        return res.status(400).json({ errors: 'This email is already registered' });
       }
     } catch (error) {
       console.log(error);

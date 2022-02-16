@@ -1,9 +1,9 @@
-var collection = require("../config/collection");
-var db = require("../config/connection");
-const objectId = require("mongodb").ObjectID;
-const nodemailer = require("nodemailer");
-var generator = require("generate-password");
-const jwt = require("jsonwebtoken");
+var collection = require('../config/collection');
+var db = require('../config/connection');
+const objectId = require('mongodb').ObjectID;
+const nodemailer = require('nodemailer');
+var generator = require('generate-password');
+const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BASE_URL = process.env.BASE;
@@ -17,19 +17,15 @@ module.exports = {
         length: 10,
         numbers: true,
       });
-      const userExist = await db
-        .get()
-        .collection(collection.TEACHER_COLLECTION)
-        .findOne({ email: email });
-      if (userExist)
-        return res.status(401).json({ errors: "Teacher already exists" });
+      const userExist = await db.get().collection(collection.TEACHER_COLLECTION).findOne({ email: email });
+      if (userExist) return res.status(401).json({ errors: 'Teacher already exists' });
       try {
         db.get()
           .collection(collection.TEACHER_COLLECTION)
           .insertOne({ name, email })
           .then((response) => {
             console.log(response);
-            res.status(200).json({ result: "success" });
+            res.status(200).json({ result: 'success' });
 
             // Creating one time link for to email
             const secret = JWT_SECRET + password;
@@ -38,12 +34,12 @@ module.exports = {
               email,
             };
             const token = jwt.sign(payload, secret, {
-              expiresIn: "15m",
+              expiresIn: '15m',
             });
             const link = `${BASE_URL}/teacher/register/${token}`;
             console.log(link);
             const transporter = nodemailer.createTransport({
-              service: "gmail",
+              service: 'gmail',
               auth: {
                 user: process.env.FROM_MAIL,
                 pass: process.env.PASSWORD,
@@ -52,8 +48,8 @@ module.exports = {
 
             const mailOptions = {
               from: process.env.FROM_MAIL,
-              to: "shabithkms2035@gmail.com",
-              subject: "Registration success",
+              to: 'shabithkms2035@gmail.com',
+              subject: 'Registration success',
               html: `
               <h2>Hi <span style="color: #00d2b5">Teacher</span>,</h2>
               <p>Click the Button  to SignUp to Your Teacher account</p>
@@ -79,7 +75,7 @@ module.exports = {
               if (err) {
                 console.log(err);
               } else {
-                console.log("Email sended");
+                console.log('Email sended');
               }
             });
           })
@@ -94,11 +90,7 @@ module.exports = {
   getTeacherDetails: (req, res) => {
     try {
       return new Promise(async () => {
-        const teachers = await db
-          .get()
-          .collection(collection.TEACHER_COLLECTION)
-          .find()
-          .toArray();
+        const teachers = await db.get().collection(collection.TEACHER_COLLECTION).find().toArray();
         // console.log(teachers);
         if (teachers.length >= 1) {
           res.status(200).json(teachers);
@@ -107,6 +99,7 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ errors: error.message });
     }
   },
   deleteTeacher: (req, res) => {
@@ -118,54 +111,44 @@ module.exports = {
         .deleteOne({ _id: objectId(newId) })
         .then((response) => {
           console.log(response);
-          res.status(200).json({ message: "Teacher deleted" });
+          res.status(200).json({ message: 'Teacher deleted' });
         });
     } catch (error) {
       console.log(error);
-      res.status(400).json({ message: "Something error" });
+      res.status(400).json({ message: error.message });
     }
   },
   addBatch: (req, res) => {
     return new Promise(async () => {
       const { BatchName, Place } = req.body;
       try {
-        const batch = await db
-          .get()
-          .collection(collection.BATCH_COLLECTION)
-          .findOne({ BatchName });
+        const batch = await db.get().collection(collection.BATCH_COLLECTION).findOne({ BatchName });
         if (!batch) {
-          console.log("in added");
+          console.log('in added');
           db.get()
             .collection(collection.BATCH_COLLECTION)
             .insertOne({ BatchName, Place, Students: [], Count: 0 })
             .then((response) => {
               console.log(response);
-              return res
-                .status(200)
-                .json({ message: "Batch added successfully" });
+              return res.status(200).json({ message: 'Batch added successfully' });
             });
         } else {
-          return res.status(404).json({ errors: "Batch already exist" });
+          return res.status(404).json({ errors: 'Batch already exist' });
         }
       } catch (error) {
         console.log(error);
-        return res.status(500).json({ errors: "Something error" });
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
   getAllBatches: (req, res) => {
     return new Promise(async () => {
       try {
-        const batches = await db
-          .get()
-          .collection(collection.BATCH_COLLECTION)
-          .find()
-          .toArray();
-        return res
-          .status(200)
-          .json({ message: "Batches got successfully", batches });
+        const batches = await db.get().collection(collection.BATCH_COLLECTION).find().toArray();
+        return res.status(200).json({ message: 'Batches got successfully', batches });
       } catch (error) {
-        return res.status(500).json({ errors: "Something error" });
+        console.log(error);
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
@@ -178,15 +161,15 @@ module.exports = {
           .deleteOne({ _id: objectId(id) })
           .then((response) => {
             console.log(response);
-            return res.status(200).json({ message: "Deleted successfully" });
+            return res.status(200).json({ message: 'Deleted successfully' });
           })
           .catch((err) => {
             console.log(err);
-            return res.status(400).json({ errors: "Something error" });
+            return res.status(400).json({ errors: err.message });
           });
       } catch (error) {
         console.log(error);
-        return res.status(500).json({ errors: "Something error" });
+        return res.status(500).json({ errors: error.message });
       }
     });
   },
