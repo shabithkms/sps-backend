@@ -159,7 +159,7 @@ module.exports = {
   },
   getStudentData: async (req, res) => {
     try {
-      let { id } = req.params;
+      const { id } = req.params;
       console.log('id', id);
       const student = await db
         .get()
