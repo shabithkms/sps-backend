@@ -1,9 +1,10 @@
 const collection = require('../config/collection');
 const db = require('../config/connection');
 const bcrypt = require('bcryptjs');
-const objectId = require('mongodb').ObjectID
+const objectId = require('mongodb').ObjectID;
 const { uploadFile } = require('../utils/s3');
 const fs = require('fs');
+const studentUtils = require('../utils/studentUtils');
 
 module.exports = {
   doSignup: async (req, res) => {
@@ -43,14 +44,11 @@ module.exports = {
   },
   doLogin: (req, res) => {
     return new Promise(async () => {
-      console.log(req.body);
-
       const { Email, Password } = req.body;
 
       try {
         // Checking the user is valid or invalid
         const student = await db.get().collection(collection.STUDENT_COLLECTION).findOne({ Email });
-        console.log(student);
         if (student) {
           // Comparing the passwords with bcrypt
           const status = await bcrypt.compare(Password, student.hashedPassword);
@@ -74,98 +72,30 @@ module.exports = {
     });
   },
   editProfile: (req, res) => {
-    return new Promise(() => {
-      const file = req.file;
-      try {
-        const {
-          Name,
-          Domain,
-          DOB,
-          Age,
-          Gender,
-          Email,
-          Mobile,
-          FatherName,
-          FatherNo,
-          MotherName,
-          MotherNo,
-          Guardian,
-          Relationship,
-          Address,
-          Village,
-          Taluk,
-          Qualification,
-          School,
-          Experience,
-          PaymentMethod,
-        } = req.body;
-        db.get()
-          .collection(collection.STUDENT_COLLECTION)
-          .updateOne(
-            { Email },
-            {
-              $set: {
-                Name,
-                Domain,
-                DOB,
-                Age,
-                Gender,
-                Mobile,
-                FatherName,
-                FatherNo,
-                MotherName,
-                MotherNo,
-                Guardian,
-                Relationship,
-                Address,
-                Village,
-                Taluk,
-                Qualification,
-                School,
-                Experience,
-                PaymentMethod,
-              },
-            }
-          )
-          .then(async (response) => {
-            console.log(response);
-            if (file) {
-              const fileName = file.filename;
-              const result = await uploadFile(file);
-              fs.unlinkSync(`uploads/${fileName}`);
-              console.log('file deleted');
-
-              db.get()
-                .collection(collection.STUDENT_COLLECTION)
-                .updateOne(
-                  { Email },
-                  {
-                    $set: {
-                      ID_Proof: result.Location,
-                    },
-                  }
-                );
-            }
-            // Get student data with Email
-            const student = await db.get().collection(collection.STUDENT_COLLECTION).findOne({ Email });
-
-            res.status(200).json({ message: 'updated successfully', student });
+    try {
+      return new Promise(() => {
+        studentUtils
+          .editProfile(req)
+          .then((response) => {
+            res.status(200).json({ message: response.message, student: response.student });
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(500).json({ errors: error.message });
           });
-      } catch (error) {
-        console.log(error);
-        return res.status(500).json({ errors: error.message });
-      }
-    });
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ errors: error.message });
+    }
   },
   getStudentData: async (req, res) => {
     try {
       const { id } = req.params;
-      console.log('id', id);
       const student = await db
         .get()
         .collection(collection.STUDENT_COLLECTION)
         .findOne({ _id: ObjectId(id) });
-      console.log(student);
       return res.status(200).json({ student });
     } catch (error) {
       console.log(error);
@@ -175,11 +105,9 @@ module.exports = {
   editProfilePhoto: (req, res) => {
     try {
       return new Promise(async () => {
-        console.log('api call');
         const file = req.file;
 
         const { _id } = req.body;
-        console.log(_id);
         if (file) {
           try {
             const oldFilename = file.filename;
