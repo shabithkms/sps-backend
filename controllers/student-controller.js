@@ -1,7 +1,7 @@
 const collection = require('../config/collection');
 const db = require('../config/connection');
 const bcrypt = require('bcryptjs');
-const { ObjectId } = require('mongodb');
+const objectId = require('mongodb').ObjectID
 const { uploadFile } = require('../utils/s3');
 const fs = require('fs');
 
@@ -170,6 +170,52 @@ module.exports = {
     } catch (error) {
       console.log(error);
       return res.status(500).json({ errors: error.message });
+    }
+  },
+  editProfilePhoto: (req, res) => {
+    try {
+      return new Promise(async () => {
+        console.log('api call');
+        const file = req.file;
+
+        const { _id } = req.body;
+        console.log(_id);
+        if (file) {
+          try {
+            const oldFilename = file.filename;
+            const result = await uploadFile(file);
+            db.get()
+              .collection(collection.STUDENT_COLLECTION)
+              .updateOne(
+                { _id: objectId(_id) },
+                {
+                  $set: {
+                    Profile: result.Location,
+                  },
+                },
+                { upsert: true }
+              )
+              .then(async () => {
+                const student = await db
+                  .get()
+                  .collection(collection.STUDENT_COLLECTION)
+                  .findOne({ _id: objectId(_id) });
+                fs.unlinkSync(`uploads/${oldFilename}`);
+                console.log('file deleted');
+                res.json({
+                  message: 'image changed successfully',
+                  profile: result.Location,
+                  student,
+                });
+              });
+          } catch (error) {
+            console.log(error);
+            res.status(500).json({ errors: error.message });
+          }
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ errors: error.message });
     }
   },
 };

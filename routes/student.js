@@ -11,5 +11,6 @@ router.post('/login', studentController.doLogin);
 // Profile Management of student
 // Editing the profile datas
 router.post('/editProfile', upload.single('ID_Proof'), studentController.editProfile);
+router.post('/editPhoto',upload.single('image'),studentController.editProfilePhoto)
 
 module.exports = router;
