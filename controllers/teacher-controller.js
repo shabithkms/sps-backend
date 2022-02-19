@@ -5,13 +5,11 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const jwt_decode = require('jwt-decode');
 const bcrypt = require('bcryptjs');
-const multer = require('multer');
 const fs = require('fs');
+var generator = require('generate-password');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BASE_URL = process.env.BASE;
-const upload = multer({ dest: 'uploads/' });
-var generator = require('generate-password');
 
 const { uploadFile } = require('../utils/s3');
 
@@ -51,7 +49,7 @@ module.exports = {
 
         // Checking the email and token email
         if (Email === decoded.email) {
-          const hi = await db
+          await db
             .get()
             .collection(collection.TEACHER_COLLECTION)
             .updateOne(
@@ -278,7 +276,7 @@ module.exports = {
   addNewReviewer: async (req, res) => {
     try {
       const { Name, Email } = req.body;
-      let reviewerExist = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
+      const reviewerExist = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
       req.body.Registered = false;
       console.log(reviewerExist);
       if (!reviewerExist) {
@@ -354,7 +352,7 @@ module.exports = {
     console.log(id);
     try {
       console.log(id);
-      let deleted = await db
+      await db
         .get()
         .collection(collection.REVIEWER_COLLECTION)
         .deleteOne({ _id: objectId(id) });
