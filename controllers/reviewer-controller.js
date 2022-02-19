@@ -7,10 +7,10 @@ module.exports = {
     console.log(req.body);
     try {
       const { Email, Password } = req.body;
-      let reviewer = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
+      const reviewer = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
 
       if (reviewer) {
-        let status = await bcrypt.compare(Password, reviewer.Password);
+        const status = await bcrypt.compare(Password, reviewer.Password);
         if (status) {
           delete reviewer.Password;
           res.status(200).json({ message: 'Loggedin successfully', reviewer });
@@ -20,7 +20,6 @@ module.exports = {
       } else {
         return res.status(401).json({ errors: "Reviewer doesn't exist" });
       }
-      console.log(reviewer);
     } catch (error) {
       console.log(error);
       res.status(500).json({ errors: error.message });
@@ -32,7 +31,7 @@ module.exports = {
       const hashedPassword = await bcrypt.hash(Password, 10);
       const exist = await db.get().collection(collection.REVIEWER_COLLECTION).findOne({ Email });
       if (!exist.Registered) {
-        const update = await db
+        await db
           .get()
           .collection(collection.REVIEWER_COLLECTION)
           .updateOne(
@@ -51,7 +50,6 @@ module.exports = {
         delete reviewer.Password;
         return res.status(200).json({ message: 'Registered successfully', reviewer });
       } else {
-        console.log('already');
         return res.status(400).json({ errors: 'This email is already registered' });
       }
     } catch (error) {
