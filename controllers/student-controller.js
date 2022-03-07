@@ -10,6 +10,7 @@ module.exports = {
   doSignup: async (req, res) => {
     try {
       const { Name, Email, Password } = req.body;
+      console.log(req.body)
       const hashedPassword = await bcrypt.hash(Password, 10);
       return new Promise(async () => {
         // Checking the student is selected for SPS
@@ -45,7 +46,7 @@ module.exports = {
   doLogin: (req, res) => {
     return new Promise(async () => {
       const { Email, Password } = req.body;
-
+      console.log(req.body)
       try {
         // Checking the user is valid or invalid
         const student = await db.get().collection(collection.STUDENT_COLLECTION).findOne({ Email });
