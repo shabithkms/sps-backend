@@ -13,15 +13,15 @@ var reviewerRouter = require('./routes/reviewer');
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`server running on ${PORT}`);
-}); 
-
+});
+console.log(process.env.REACT_BASE_URL);
 //Middlewaress
 app.use(express.json({ limit: '50mb', extended: true }));
 app.use(express.urlencoded({ limit: '50mb', extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.REACT_BASE_URL,
     credentials: true,
   })
 );
@@ -40,9 +40,9 @@ db.connect((err) => {
 });
 
 //Routes
-app.use('/', studentRouter);
-app.use('/admin', adminRouter);
-app.use('/teacher', teacherRouter);
-app.use('/reviewer', reviewerRouter);
+app.use('/api', studentRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/teacher', teacherRouter);
+app.use('/api/reviewer', reviewerRouter);
 
 module.exports = app;

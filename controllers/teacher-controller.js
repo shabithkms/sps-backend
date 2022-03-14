@@ -42,13 +42,13 @@ module.exports = {
   teacherSignup: (req, res) => {
     return new Promise(async () => {
       try {
-        console.log(req.body);
         const { Name, Email, Password, token } = req.body;
         const decoded = jwt_decode(token);
+        console.log(decoded);
         const hashedPassword = await bcrypt.hash(Password, 10);
 
         // Checking the email and token email
-        if (Email === decoded.email) {
+        if (Email === decoded.Email) {
           await db
             .get()
             .collection(collection.TEACHER_COLLECTION)
@@ -76,15 +76,21 @@ module.exports = {
     });
   },
   getTeacherData: (req, res) => {
-    const id = req.params.id;
+    const { id } = req.params;
+    console.log(id);
     return new Promise(async () => {
       try {
         const teacherData = await db
           .get()
           .collection(collection.TEACHER_COLLECTION)
           .findOne({ _id: objectId(id) });
-        delete teacherData.password;
-        return res.status(200).json({ response: 'success', teacherData });
+        console.log(teacherData);
+        // delete teacherData.Password;
+        if (teacherData) {
+          return res.status(200).json({ response: 'success', teacherData });
+        } else {
+          return res.status(401).json({ errors: 'teacher not found' });
+        }
       } catch (error) {
         console.log(error);
         res.status(500).json({ errors: error.message });
@@ -167,8 +173,9 @@ module.exports = {
               },
             }
           )
-          .then(() => {
-            res.status(200).json({ response: 'Profile edited successfully' });
+          .then(async () => {
+            const teacher = await db.get().collection(collection.TEACHER_COLLECTION).findOne({ Email });
+            res.status(200).json({ message: 'Profile edited successfully', teacher });
           })
           .catch((err) => {
             res.status(500).json({ errors: err.message });
@@ -201,12 +208,16 @@ module.exports = {
               },
               { upsert: true }
             )
-            .then(() => {
+            .then(async () => {
               fs.unlinkSync(`uploads/${oldFilename}`);
               console.log('file deleted');
+              const teacher = await db
+                .get()
+                .collection(collection.TEACHER_COLLECTION)
+                .findOne({ _id: objectId(_id) });
               res.json({
                 message: 'image changed successfully',
-                profile: result.Location,
+                teacher,
               });
             });
         } catch (error) {
@@ -255,7 +266,7 @@ module.exports = {
   getAllStudents: (req, res) => {
     return new Promise(async () => {
       try {
-        const students = await db.get().collection(collection.PASSED_STUDENT_COLLECTION).find().toArray();
+        const students = await db.get().collection(collection.STUDENT_COLLECTION).find().toArray();
         return res.status(200).json({ message: 'Students got successfully', students });
       } catch (error) {
         console.log(error);
@@ -263,7 +274,24 @@ module.exports = {
       }
     });
   },
-
+  // Get student with ID
+  getStudentWithID: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const student = await db
+        .get()
+        .collection(collection.STUDENT_COLLECTION)
+        .findOne({ _id: objectId(id) });
+      if (student) {
+        return res.status(200).json({ student });
+      } else {
+        return res.status(401).json({ errors: 'This student is not registered' });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ errors: error.message });
+    }
+  },
   //Reviewer Management
   getAllReviewer: async (req, res) => {
     try {

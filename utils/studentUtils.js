@@ -1,5 +1,7 @@
 const db = require('../config/connection');
 const collection = require('../config/collection');
+const { uploadFile } = require('./s3');
+const fs =require('fs')
 
 module.exports = {
   editProfile: (req) => {

@@ -33,6 +33,8 @@ router.get('/getAllBatches', teacherController.getAllBatches);
 router.post('/addStudent', teacherController.addStudent);
 // Get all students details
 router.get('/getAllStudents', teacherController.getAllStudents);
+// Get a student details with ID
+router.get('/get-student-details/:id',teacherController.getStudentWithID)
 
 // Reviewer Management
 // Get all reviewer details
